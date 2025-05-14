@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Mining Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
+</head>
+<body>
+    <h1>Bitcoin Mining Over Time</h1>
+    <div style="width: 800px; height: 400px;">
+        <canvas id="bitcoinChart"></canvas>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <label for="startYear">Start Year:</label>
+        <input type="range" id="startYear" min="2009" max="2140" value="2009" oninput="updateYearRange()">
+        <span id="startYearLabel">2009</span>
+
+        <label for="endYear" style="margin-left: 20px;">End Year:</label>
+        <input type="range" id="endYear" min="2009" max="2140" value="2140" oninput="updateYearRange()">
+        <span id="endYearLabel">2140</span>
+    </div>
+
+    <script>
+        // Actual data points for remaining Bitcoins
+        const bitcoinData = {
+            2009: 21000000,
+            2010: 19600000,
+            2011: 18200000,
+            2012: 16800000,
+            2013: 15300000,
+            2014: 13800000,
+            2015: 12300000,
+            2016: 10800000,
+            2017: 9250000,
+            2018: 7700000,
+            2019: 6200000,
+            2020: 4800000,
+            2021: 3400000,
+            2022: 2400000,
+            2023: 1800000,
+            2024: 1400000,
+            2025: 1070000,
+            2026: 971275,
+            2027: 808000,
+            2028: 644000,
+            2029: 580000,
+            2030: 516000,
+            2031: 452000,
+            2032: 388000,
+            2033: 355000,
+            2034: 322000,
+            2035: 290000,
+            2036: 258000,
+            2037: 226000,
+            2040: 160000,
+            2050: 90000,
+            2060: 45000,
+            2070: 20000,
+            2100: 100,
+            2140: 0
+        };
+
+        const years = Object.keys(bitcoinData).map(Number);
+        const remainingBitcoins = Object.values(bitcoinData);
+
+        // Halving data
+        const halvingData = [
+            { year: 2009, reward: 50.00000000 },
+            { year: 2012, reward: 25.00000000 },
+            { year: 2016, reward: 12.50000000 },
+            { year: 2020, reward: 6.25000000 },
+            { year: 2024, reward: 3.12500000 },
+            { year: 2028, reward: 1.56250000 },
+            { year: 2032, reward: 0.78125000 },
+            { year: 2036, reward: 0.39062500 },
+            { year: 2040, reward: 0.19531250 },
+            { year: 2044, reward: 0.09765625 },
+            { year: 2048, reward: 0.04882813 },
+            { year: 2052, reward: 0.02441406 },
+            { year: 2056, reward: 0.01220703 },
+            { year: 2060, reward: 0.00610352 },
+            { year: 2064, reward: 0.00305176 },
+            { year: 2068, reward: 0.00152588 },
+            { year: 2072, reward: 0.00076294 },
+            { year: 2076, reward: 0.00038147 },
+            { year: 2080, reward: 0.00019073 },
+            { year: 2084, reward: 0.00009537 },
+            { year: 2088, reward: 0.00004768 },
+            { year: 2092, reward: 0.00002384 },
+            { year: 2096, reward: 0.00001192 },
+            { year: 2100, reward: 0.00000596 },
+            { year: 2104, reward: 0.00000298 },
+            { year: 2108, reward: 0.00000149 },
+            { year: 2112, reward: 0.00000074 },
+            { year: 2116, reward: 0.00000037 },
+            { year: 2120, reward: 0.00000018 },
+            { year: 2124, reward: 0.00000009 },
+            { year: 2128, reward: 0.00000004 },
+            { year: 2132, reward: 0.00000002 },
+            { year: 2136, reward: 0.00000001 },
+            { year: 2140, reward: 0 }
+        ];
+
+        // Create datasets for halvings
+        const halvingLines = [];
+        halvingData.forEach(halving => {
+            const line = years.map(year => {
+                if (year === halving.year) {
+                    return 21000000; // Maximum value to create vertical line
+                }
+                return null; // No point for other years
+            });
+            halvingLines.push({
+                label: `Halving ${halving.year} (${halving.reward} BTC)`,
+                data: line,
+                borderColor: 'rgba(255, 0, 0, 0.5)',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                fill: false,
+                pointRadius: 0,
+                showLine: true
+            });
+        });
+
+        // Create the chart
+        const ctx = document.getElementById('bitcoinChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Remaining Bitcoins to Mine',
+                        data: remainingBitcoins,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: true,
+                        tension: 0.1
+                    },
+                    ...halvingLines
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        display: false // Hide legend as there would be too many entries
+                    },
+                    title: {
+                        display: true,
+                        text: 'Remaining Bitcoins to Mine Over Time'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Year'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Remaining Bitcoins'
+                        },
+                        min: 0
+                    }
+                }
+            }
+        });
+
+        function updateYearRange() {
+            const startYearInput = parseInt(document.getElementById('startYear').value);
+            const endYearInput = parseInt(document.getElementById('endYear').value);
+
+            document.getElementById('startYearLabel').textContent = startYearInput;
+            document.getElementById('endYearLabel').textContent = endYearInput;
+
+            const filteredYears = [];
+            const filteredRemainingBitcoins = [];
+
+            for (let i = 0; i < years.length; i++) {
+                if (years[i] >= startYearInput && years[i] <= endYearInput) {
+                    filteredYears.push(years[i]);
+                    filteredRemainingBitcoins.push(remainingBitcoins[i]);
+                }
+            }
+
+            // Find max and min values in the filtered data for y-axis scaling
+            const maxBitcoins = Math.max(...filteredRemainingBitcoins);
+            const minBitcoins = Math.min(...filteredRemainingBitcoins);
+            const padding = (maxBitcoins - minBitcoins) * 0.1;
+
+            chart.options.scales.y.max = maxBitcoins + padding;
+            chart.options.scales.y.min = Math.max(0, minBitcoins - padding);
+
+            // Update data for all datasets
+            chart.data.labels = filteredYears;
+            chart.data.datasets[0].data = filteredRemainingBitcoins;
+            
+            // Update halving lines for the selected range
+            halvingData.forEach((halving, index) => {
+                const line = filteredYears.map(year => {
+                    if (year === halving.year) {
+                        return maxBitcoins + padding;
+                    }
+                    return null;
+                });
+                chart.data.datasets[index + 1].data = line;
+            });
+
+            chart.update();
+        }
+    </script>
+</body>
+</html>
